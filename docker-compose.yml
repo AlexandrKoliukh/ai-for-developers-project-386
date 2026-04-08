@@ -1,0 +1,10 @@
+services:
+  claude:
+    build: .
+    container_name: claude-project
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
