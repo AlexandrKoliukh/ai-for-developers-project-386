@@ -26,16 +26,25 @@ from .. import store
 # ---------------------------------------------------------------------------
 # Owner / working-hours configuration (environment variables)
 #
-# OWNER_TIMEZONE  — IANA timezone name, e.g. "Europe/Moscow" or "UTC"
-# WORK_START_HOUR — Start of working day in owner's local time (default 9)
-# WORK_END_HOUR   — End of working day in owner's local time (default 18)
+# OWNER_TIMEZONE       — IANA timezone name, e.g. "Europe/Moscow" or "UTC"
+# WORK_START_HOUR      — Start hour of working day in owner's local time (default 9)
+# WORK_START_MINUTE    — Start minute (default 0)
+# WORK_END_HOUR        — End hour of working day in owner's local time (default 18)
+# WORK_END_MINUTE      — End minute (default 0), e.g. 30 for 18:30
+# SLOT_INTERVAL_MINUTES — Step between slot start times (default 30).
+#                         Slots span durationMinutes each but start times
+#                         advance by this interval, so a 360-min meeting
+#                         with a 30-min interval shows many start options.
 #
 # Guests see UTC datetimes in API responses; the browser renders them
 # in the guest's local timezone automatically via new Date(isoString).
 # ---------------------------------------------------------------------------
 OWNER_TIMEZONE = os.getenv("OWNER_TIMEZONE", "UTC")
 WORK_START_HOUR = int(os.getenv("WORK_START_HOUR", "9"))
+WORK_START_MINUTE = int(os.getenv("WORK_START_MINUTE", "0"))
 WORK_END_HOUR = int(os.getenv("WORK_END_HOUR", "18"))
+WORK_END_MINUTE = int(os.getenv("WORK_END_MINUTE", "0"))
+SLOT_INTERVAL_MINUTES = int(os.getenv("SLOT_INTERVAL_MINUTES", "30"))
 BOOKING_WINDOW_DAYS = 14
 
 router = APIRouter(tags=["Guest"])
@@ -58,35 +67,42 @@ def _booking_window():
 
 def _generate_slots(target_date: _Date, duration_minutes: int) -> List[TimeSlot]:
     """
-    Divide [WORK_START_HOUR, WORK_END_HOUR) in the owner's timezone into
-    consecutive non-overlapping slots of duration_minutes each.
+    Generate potential time slots for target_date.
+
+    Start times advance by SLOT_INTERVAL_MINUTES (default 30 min).
+    Each slot spans duration_minutes. Only slots that end on or before
+    WORK_END are included.
+
+    Example: 360-min meeting, 9:00-20:30, 30-min interval →
+        9:00-15:00, 9:30-15:30, ..., 14:30-20:30  (12 slots)
 
     All returned startTime / endTime values are UTC (timezone-aware).
-    The slot computation respects DST automatically via ZoneInfo.
+    ZoneInfo handles DST transitions automatically.
     """
     tz = _owner_tz()
-    delta = timedelta(minutes=duration_minutes)
+    slot_duration = timedelta(minutes=duration_minutes)
+    interval = timedelta(minutes=SLOT_INTERVAL_MINUTES)
 
-    # Express working-hour boundaries in the owner's local timezone → UTC
+    # Working-hour boundaries in owner's local timezone
     start_local = datetime(
         target_date.year, target_date.month, target_date.day,
-        WORK_START_HOUR, 0, 0, tzinfo=tz,
+        WORK_START_HOUR, WORK_START_MINUTE, 0, tzinfo=tz,
     )
     end_local = datetime(
         target_date.year, target_date.month, target_date.day,
-        WORK_END_HOUR, 0, 0, tzinfo=tz,
+        WORK_END_HOUR, WORK_END_MINUTE, 0, tzinfo=tz,
     )
 
     slots: List[TimeSlot] = []
     current = start_local
-    while current + delta <= end_local:
-        slot_end = current + delta
+    while current + slot_duration <= end_local:
+        slot_end = current + slot_duration
         slots.append(TimeSlot(
             startTime=current.astimezone(timezone.utc),
             endTime=slot_end.astimezone(timezone.utc),
-            available=True,  # availability filtered below
+            available=True,  # availability filtered by caller
         ))
-        current = slot_end
+        current += interval  # advance by fixed interval, not by duration
     return slots
 
 
