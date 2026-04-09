@@ -32,6 +32,3 @@ Thumbs.db
 # Temp
 tmp/
 .tmp/
-
-# Docker
-.dockerignore

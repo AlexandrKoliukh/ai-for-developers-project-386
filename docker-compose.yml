@@ -8,3 +8,28 @@ services:
       - .:/workspace
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+  # Prism reads the compiled OpenAPI spec and serves realistic mock responses.
+  # Run `npx tsp compile .` in src/spec/ first to generate the spec file.
+  mock-api:
+    image: stoplight/prism:4
+    command: mock -h 0.0.0.0 /spec/openapi.yaml --dynamic
+    volumes:
+      - ./src/spec/tsp-output/@typespec/openapi3/openapi.yaml:/spec/openapi.yaml:ro
+    ports:
+      - "4010:4010"
+
+  # Vite dev server — hot-reload frontend.
+  # Proxies /api/* → mock-api:4010 inside the Docker network.
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_MOCK_API_URL: http://mock-api:4010
+    depends_on:
+      - mock-api
+    volumes:
+      # Mount source for hot-reload; node_modules stays in the container
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
