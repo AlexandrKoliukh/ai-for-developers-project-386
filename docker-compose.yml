@@ -37,7 +37,10 @@ services:
       - ./backend/app:/app/app
     environment:
       - WORK_START_HOUR=9
+      - WORK_START_MINUTE=0
       - WORK_END_HOUR=18
+      - WORK_END_MINUTE=0    # set to 30 for 18:30, etc.
+      - SLOT_INTERVAL_MINUTES=30  # step between slot start times
       # Owner's IANA timezone — slots are generated in this timezone.
       # Change to e.g. Europe/Moscow, America/New_York, Asia/Tokyo, etc.
       - OWNER_TIMEZONE=UTC
