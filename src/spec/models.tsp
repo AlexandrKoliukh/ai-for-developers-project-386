@@ -31,11 +31,11 @@ model EventType {
 
 @doc("Payload for creating a new event type.")
 model EventTypeCreateRequest {
-  @doc("URL-safe slug that becomes the event type's permanent id.")
+  @doc("URL-safe slug. If omitted, the server generates one automatically.")
   @minLength(2)
   @maxLength(80)
   @pattern("^[a-z0-9]+(?:-[a-z0-9]+)*$")
-  id: string;
+  id?: string;
 
   @minLength(1)
   @maxLength(120)

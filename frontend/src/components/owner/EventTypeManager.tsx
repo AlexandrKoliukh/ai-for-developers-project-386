@@ -92,8 +92,7 @@ export default function EventTypeManager() {
         <div className="loading-state">Загрузка…</div>
       ) : (
         <div className="data-table">
-          <div className="table-row t-head" style={{ gridTemplateColumns: '140px 1fr 80px 64px' }}>
-            <span>Slug</span>
+          <div className="table-row t-head" style={{ gridTemplateColumns: '1fr 80px 64px' }}>
             <span>Название / описание</span>
             <span>Длит.</span>
             <span />
@@ -101,9 +100,7 @@ export default function EventTypeManager() {
 
           {items.map((et) => (
             <motion.div key={et.id} layout transition={{ duration: 0.2 }}>
-              <div className="table-row" style={{ gridTemplateColumns: '140px 1fr 80px 64px' }}>
-                <span className="cell-mono" data-label="Slug">{et.id}</span>
-
+              <div className="table-row" style={{ gridTemplateColumns: '1fr 80px 64px' }}>
                 <div data-label="Название">
                   <div className="cell-primary">{et.title}</div>
                   {et.description && (

@@ -50,7 +50,6 @@ export default function EventTypeSelector({ onSelect }: Props) {
           whileHover={{ scale: 1.006 }}
           whileTap={{ scale: 0.996 }}
         >
-          <span className="et-slug">{et.id}</span>
           <h3 className="et-title">{et.title}</h3>
           {et.description && (
             <p className="et-desc">{et.description}</p>

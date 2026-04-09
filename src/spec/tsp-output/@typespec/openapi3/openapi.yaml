@@ -555,7 +555,6 @@ components:
     EventTypeCreateRequest:
       type: object
       required:
-        - id
         - title
         - durationMinutes
       properties:
@@ -564,7 +563,7 @@ components:
           minLength: 2
           maxLength: 80
           pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-          description: URL-safe slug that becomes the event type's permanent id.
+          description: URL-safe slug. If omitted, the server generates one automatically.
         title:
           type: string
           minLength: 1

@@ -12,7 +12,7 @@ export interface EventType {
 }
 
 export interface EventTypeCreateRequest {
-  id: string;
+  id?: string;
   title: string;
   description?: string;
   durationMinutes: number;

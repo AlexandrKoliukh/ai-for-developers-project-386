@@ -35,10 +35,10 @@ export default function UpcomingBookings() {
         <div className="loading-state">Нет предстоящих встреч</div>
       ) : (
         <div className="data-table">
-          <div className="table-row t-head" style={{ gridTemplateColumns: '180px 140px 1fr' }}>
+          <div className="table-row t-head" style={{ gridTemplateColumns: '180px 1fr 1fr' }}>
             <span>Дата и время</span>
-            <span>Тип события</span>
             <span>Гость</span>
+            <span>Заметка</span>
           </div>
 
           {bookings.map((booking, i) => {
@@ -49,7 +49,7 @@ export default function UpcomingBookings() {
               <motion.div
                 key={booking.id}
                 className="table-row"
-                style={{ gridTemplateColumns: '180px 140px 1fr' }}
+                style={{ gridTemplateColumns: '180px 1fr 1fr' }}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.035, duration: 0.2 }}
@@ -63,19 +63,20 @@ export default function UpcomingBookings() {
                   </div>
                 </div>
 
-                <div data-label="Тип события">
-                  <span className="tag">{booking.eventTypeId}</span>
-                </div>
-
                 <div data-label="Гость">
                   <div className="cell-primary">{booking.guestName}</div>
                   <div className="cell-secondary">{booking.guestEmail}</div>
-                  {booking.guestNote && (
-                    <div className="cell-mono">
-                      {booking.guestNote.length > 64
-                        ? booking.guestNote.slice(0, 64) + '…'
+                </div>
+
+                <div data-label="Заметка">
+                  {booking.guestNote ? (
+                    <div className="cell-secondary">
+                      {booking.guestNote.length > 80
+                        ? booking.guestNote.slice(0, 80) + '…'
                         : booking.guestNote}
                     </div>
+                  ) : (
+                    <span className="cell-secondary" style={{ opacity: 0.4 }}>—</span>
                   )}
                 </div>
               </motion.div>

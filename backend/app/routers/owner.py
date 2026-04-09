@@ -6,6 +6,7 @@ In a real deployment you would add an API key or OAuth2 guard here.
 """
 from datetime import date as _Date
 from typing import Optional
+import uuid as _uuid
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -33,15 +34,25 @@ async def list_event_types() -> EventTypeList:
     return EventTypeList(items=items, total=len(items))
 
 
+def _generate_slug() -> str:
+    return _uuid.uuid4().hex[:8]
+
+
 @router.post("/event-types", response_model=EventType, status_code=201)
 async def create_event_type(body: EventTypeCreateRequest) -> EventType:
-    """Create a new event type. The slug (id) must be globally unique."""
-    if await store.event_type_exists(body.id):
-        raise HTTPException(
-            status_code=409,
-            detail={"code": "CONFLICT", "message": f"Event type '{body.id}' already exists"},
-        )
-    et = EventType(**body.model_dump())
+    """Create a new event type. ID is auto-generated if not provided."""
+    base = body.id if body.id else _generate_slug()
+    slug = base
+    counter = 2
+    while await store.event_type_exists(slug):
+        slug = f"{base}-{counter}"
+        counter += 1
+    et = EventType(
+        id=slug,
+        title=body.title,
+        description=body.description,
+        durationMinutes=body.durationMinutes,
+    )
     return await store.create_event_type(et)
 
 

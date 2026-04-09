@@ -334,6 +334,7 @@ button { font-family: var(--font); cursor: pointer; }
   justify-content: space-between;
   padding-top: var(--sp-md);
   border-top: 1px solid var(--c-border);
+  margin-top: auto;
 }
 
 .et-duration {
@@ -496,9 +497,10 @@ button { font-family: var(--font); cursor: pointer; }
   color: var(--c-text);
   transition: all var(--t);
 }
-.slot-btn:hover:not(:disabled)  { border-color: var(--c-border-hi); background: var(--c-surface-3); }
-.slot-btn.selected               { background: var(--c-white); color: var(--c-black); border-color: var(--c-white); }
-.slot-btn:disabled               { color: var(--c-text-3); cursor: not-allowed; text-decoration: line-through; background: var(--c-surface); }
+.slot-btn:hover:not(:disabled)              { border-color: var(--c-border-hi); background: var(--c-surface-3); }
+.slot-btn.selected                           { background: var(--c-white); color: var(--c-black); border-color: var(--c-white); }
+.slot-btn.selected:hover:not(:disabled)      { background: var(--c-white); color: var(--c-black); border-color: var(--c-white); }
+.slot-btn:disabled                           { color: var(--c-text-3); cursor: not-allowed; text-decoration: line-through; background: var(--c-surface); }
 
 .no-slots {
   color: var(--c-text-3);

@@ -34,15 +34,15 @@ class EventType(BaseModel):
 
 
 class EventTypeCreateRequest(BaseModel):
-    id: str = Field(min_length=2, max_length=80)
+    id: Optional[str] = Field(default=None, min_length=2, max_length=80)
     title: str = Field(min_length=1, max_length=120)
     description: Optional[str] = Field(default=None, max_length=1000)
     durationMinutes: int = Field(gt=0)
 
     @field_validator("id")
     @classmethod
-    def validate_slug(cls, v: str) -> str:
-        if not _SLUG_RE.match(v):
+    def validate_slug(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not _SLUG_RE.match(v):
             raise ValueError("id must match ^[a-z0-9]+(?:-[a-z0-9]+)*$")
         return v
 
