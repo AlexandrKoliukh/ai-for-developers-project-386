@@ -45,7 +45,7 @@ services:
       - SLOT_INTERVAL_MINUTES=30  # step between slot start times
       # Owner's IANA timezone — slots are generated in this timezone.
       # Change to e.g. Europe/Moscow, America/New_York, Asia/Tokyo, etc.
-      - OWNER_TIMEZONE=UTC
+      - OWNER_TIMEZONE=Europe/Moscow
 
   # ---------------------------------------------------------------------------
   # Frontend — Vite dev server

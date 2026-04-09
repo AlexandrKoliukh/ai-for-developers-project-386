@@ -66,7 +66,7 @@ test.describe('Owner Dashboard', () => {
     await expect(page.locator('.inline-form')).not.toBeVisible({ timeout: 5_000 });
 
     // New row should appear in the table
-    const table = page.locator('.data-table');
+    const table = page.locator('.owner-section').nth(1).locator('.data-table');
     await expect(table.locator(`text=${uniqueTitle}`)).toBeVisible({
       timeout: 5_000,
     });
@@ -88,14 +88,16 @@ test.describe('Owner Dashboard', () => {
     await expect(page.locator('.inline-form')).not.toBeVisible({ timeout: 3_000 });
 
     // The filled title should NOT appear in the table
+    const etTable = page.locator('.owner-section').nth(1).locator('.data-table');
     await expect(
-      page.locator('.data-table').locator('text=Should Not Be Saved'),
+      etTable.locator('text=Should Not Be Saved'),
     ).not.toBeVisible();
   });
 
   test('Edit: clicking edit button opens pre-filled form', async ({ page }) => {
-    // Wait for first edit button to be visible
-    await expect(page.locator('.data-table')).toBeVisible({ timeout: 10_000 });
+    // Wait for first edit button to be visible (scope to event-types table)
+    const etTable = page.locator('.owner-section').nth(1).locator('.data-table');
+    await expect(etTable).toBeVisible({ timeout: 10_000 });
     await expect(
       page.locator('.row-actions .icon-btn').first(),
     ).toBeVisible({ timeout: 10_000 });
@@ -120,7 +122,8 @@ test.describe('Owner Dashboard', () => {
   test('Edit: updating title and saving reflects change in table', async ({
     page,
   }) => {
-    await expect(page.locator('.data-table')).toBeVisible({ timeout: 10_000 });
+    const etTable = page.locator('.owner-section').nth(1).locator('.data-table');
+    await expect(etTable).toBeVisible({ timeout: 10_000 });
     await expect(
       page.locator('.row-actions .icon-btn[title="Редактировать"]').first(),
     ).toBeVisible({ timeout: 10_000 });
@@ -141,12 +144,13 @@ test.describe('Owner Dashboard', () => {
 
     // Updated title appears in table
     await expect(
-      page.locator('.data-table').locator(`text=${updatedTitle}`),
+      etTable.locator(`text=${updatedTitle}`),
     ).toBeVisible({ timeout: 5_000 });
   });
 
   test('Edit cancel: discards changes', async ({ page }) => {
-    await expect(page.locator('.data-table')).toBeVisible({ timeout: 10_000 });
+    const etTable = page.locator('.owner-section').nth(1).locator('.data-table');
+    await expect(etTable).toBeVisible({ timeout: 10_000 });
     await expect(
       page.locator('.row-actions .icon-btn[title="Редактировать"]').first(),
     ).toBeVisible({ timeout: 10_000 });
@@ -166,10 +170,10 @@ test.describe('Owner Dashboard', () => {
 
     // Original title still there, discarded title not present
     await expect(
-      page.locator('.data-table').locator(`text=${originalTitle}`),
+      etTable.locator(`text=${originalTitle}`),
     ).toBeVisible();
     await expect(
-      page.locator('.data-table').locator('text=Discarded Change'),
+      etTable.locator('text=Discarded Change'),
     ).not.toBeVisible();
   });
 

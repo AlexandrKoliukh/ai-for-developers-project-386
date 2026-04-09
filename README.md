@@ -1,5 +1,6 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/AlexandrKoliukh/ai-for-developers-project-386/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/AlexandrKoliukh/ai-for-developers-project-386/actions)
+[![Tests](https://github.com/AlexandrKoliukh/ai-for-developers-project-386/actions/workflows/tests.yml/badge.svg)](https://github.com/AlexandrKoliukh/ai-for-developers-project-386/actions/workflows/tests.yml)
 
 ---
 
@@ -7,43 +8,49 @@
 
 Сервис бронирования времени (Cal.com-like). Один владелец, гости бронируют без аккаунта.
 
-### Быстрый старт
+**Демо:** https://booking-app-b7xo.onrender.com/
 
-**1. Фронтенд + моки**
+### Структура проекта
+
+```
+├── frontend/           Vite + React + TypeScript
+├── backend/            FastAPI (Python)
+├── src/spec/           TypeSpec → OpenAPI 3.0
+├── tests/              Playwright (API + E2E)
+├── docker-compose.yml  локальное окружение
+├── Dockerfile          production-сборка (Render)
+└── Makefile            все команды проекта
+```
+
+### Локальное развёртывание
 
 ```bash
-make frontend
+make install     # установить зависимости фронтенда
+make up          # бэкенд + фронтенд
 ```
 
-Открыть: http://localhost:5173
+- http://localhost:5173 — фронтенд
+- http://localhost:8000/docs — API документация
 
-**2. Claude Code в Docker**
+Другие команды:
 
 ```bash
-export ANTHROPIC_API_KEY=your_key
-make claude
+make stop        # остановить контейнеры
+make logs        # логи контейнеров
+make spec        # TypeSpec → openapi.yaml
+make build       # production-сборка фронтенда
+make tsc         # проверка типов TypeScript
 ```
 
-Требует `~/.claude` на хосте (настройки и авторизация шарятся автоматически).
+Настройки (таймзона, рабочие часы) — в `docker-compose.yml`.
 
-### Все команды
-
-```
-make help
-```
-
-### Тестирование (Playwright)
+### Тестирование
 
 ```bash
-# Первый раз: установить Playwright и Chromium
-make test-install
-
-# Запустить тесты (Docker-стек поднимается автоматически)
-make test          # все тесты
-make test-api      # только API-тесты (http://localhost:8000)
-make test-e2e      # только E2E-тесты (http://localhost:5173)
-make test-headed   # E2E с видимым браузером
-make test-report   # открыть HTML-отчёт
+make test-install   # первый раз: Playwright + Chromium
+make test           # все тесты (стек поднимается автоматически)
 ```
 
-> Если стек уже запущен (`make up`), тесты переиспользуют существующие серверы и не останавливают их после завершения.
+### Деплой
+
+Приложение деплоится на [Render](https://render.com) через `render.yaml`. Push в `main` запускает автоматический деплой.
