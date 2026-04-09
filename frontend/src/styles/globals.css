@@ -40,6 +40,7 @@
    ===================================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root       { height: 100%; }
+html                    { scrollbar-gutter: stable; }
 
 body {
   font-family: var(--font);
@@ -284,9 +285,10 @@ button { font-family: var(--font); cursor: pointer; }
 .event-types-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1px;
-  background: var(--c-border);
-  border: 1px solid var(--c-border);
+  gap: 0;
+  background: none;
+  border-top: 1px solid var(--c-border-2);
+  border-left: 1px solid var(--c-border-2);
 }
 
 .event-type-card {
@@ -297,6 +299,8 @@ button { font-family: var(--font); cursor: pointer; }
   flex-direction: column;
   gap: 12px;
   transition: background var(--t);
+  border-right: 1px solid var(--c-border-2);
+  border-bottom: 1px solid var(--c-border-2);
 }
 .event-type-card:hover { background: var(--c-surface-2); }
 
@@ -396,7 +400,7 @@ button { font-family: var(--font); cursor: pointer; }
 /* 14-day grid — 7 per row → 2 rows */
 .days-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
   background: var(--c-border);
   border-bottom: 1px solid var(--c-border);
@@ -762,12 +766,6 @@ button { font-family: var(--font); cursor: pointer; }
     grid-template-columns: 1fr;
   }
 
-  /* Calendar: horizontal scroll if needed */
-  .days-grid {
-    grid-template-columns: repeat(7, minmax(56px, 1fr));
-    overflow-x: auto;
-  }
-
   .calendar-header { padding: 12px var(--sp-md); flex-wrap: wrap; }
   .slots-panel { padding: var(--sp-md); }
 
@@ -830,6 +828,7 @@ button { font-family: var(--font); cursor: pointer; }
   .section-header { flex-wrap: wrap; }
 
   .day-cell { min-height: 72px; padding: 8px 4px 8px; }
+  .day-slots-range, .day-slots-empty { display: none; }
 
   .confirmation-block { padding: 20px var(--sp-md); }
   .detail-row { flex-direction: column; gap: var(--sp-xs); }

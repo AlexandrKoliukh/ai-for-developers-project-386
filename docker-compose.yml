@@ -1,16 +1,18 @@
 services:
-  claude:
+  claude-code:
     build: .
-    container_name: claude-project
+    container_name: claude-code
+    profiles: ["claude"]
+    working_dir: /workspace
     stdin_open: true
     tty: true
     volumes:
       - .:/workspace
+      - ${HOME}/.claude:/root/.claude:cached
+      - ${HOME}/.claude.json:/root/.claude.json:cached
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 
-  # Prism reads the compiled OpenAPI spec and serves realistic mock responses.
-  # Run `npx tsp compile .` in src/spec/ first to generate the spec file.
   mock-api:
     image: stoplight/prism:4
     command: mock -h 0.0.0.0 /spec/openapi.yaml --dynamic
@@ -19,17 +21,14 @@ services:
     ports:
       - "4010:4010"
 
-  # Vite dev server — hot-reload frontend.
-  # Proxies /api/* → mock-api:4010 inside the Docker network.
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
-    environment:
-      VITE_MOCK_API_URL: http://mock-api:4010
     depends_on:
       - mock-api
+    environment:
+      - VITE_MOCK_API_URL=http://mock-api:4010
     volumes:
-      # Mount source for hot-reload; node_modules stays in the container
       - ./frontend/src:/app/src
       - ./frontend/index.html:/app/index.html

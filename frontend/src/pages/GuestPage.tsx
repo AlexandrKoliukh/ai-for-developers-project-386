@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, memo } from 'react';
 import { addDays, format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -9,6 +9,38 @@ import CalendarPicker      from '../components/guest/CalendarPicker';
 import TimeSlotPicker      from '../components/guest/TimeSlotPicker';
 import GuestForm           from '../components/guest/GuestForm';
 import BookingConfirmation from '../components/guest/BookingConfirmation';
+
+// Isolated clock component — has its own state so only it re-renders every second
+const LiveClock = memo(function LiveClock() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="datetime-bar">
+      <div className="datetime-item">
+        <span className="datetime-label">Сегодня</span>
+        <span className="datetime-value">
+          {format(now, 'd MMMM yyyy', { locale: ru })}
+        </span>
+      </div>
+      <div className="datetime-item">
+        <span className="datetime-label">Время</span>
+        <span className="datetime-time">
+          {format(now, 'HH:mm:ss')}
+        </span>
+      </div>
+      <div className="datetime-item">
+        <span className="datetime-label">День недели</span>
+        <span className="datetime-value">
+          {format(now, 'EEEE', { locale: ru })}
+        </span>
+      </div>
+    </div>
+  );
+});
 
 // -------------------------------------------------------
 // Types
@@ -42,13 +74,6 @@ export default function GuestPage() {
   const [confirmedBooking,  setConfirmedBooking]  = useState<Booking | null>(null);
 
   const [slotsMap, setSlotsMap] = useState<Record<string, TimeSlot[]>>({});
-
-  // Live clock
-  const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
 
   // Load all 14-day slots when event type is selected
   useEffect(() => {
@@ -142,27 +167,8 @@ export default function GuestPage() {
 
   return (
     <div>
-      {/* Current date & time bar */}
-      <div className="datetime-bar">
-        <div className="datetime-item">
-          <span className="datetime-label">Сегодня</span>
-          <span className="datetime-value">
-            {format(now, 'd MMMM yyyy', { locale: ru })}
-          </span>
-        </div>
-        <div className="datetime-item">
-          <span className="datetime-label">Время</span>
-          <span className="datetime-time">
-            {format(now, 'HH:mm:ss')}
-          </span>
-        </div>
-        <div className="datetime-item">
-          <span className="datetime-label">День недели</span>
-          <span className="datetime-value">
-            {format(now, 'EEEE', { locale: ru })}
-          </span>
-        </div>
-      </div>
+      {/* Current date & time bar — isolated component, won't trigger parent re-renders */}
+      <LiveClock />
 
       {/* Step indicator — clickable, hidden on confirmation */}
       {step !== 'confirmation' && (

@@ -11,8 +11,8 @@ export default function OwnerPage() {
         </p>
       </div>
 
-      <EventTypeManager />
       <UpcomingBookings />
+      <EventTypeManager />
     </div>
   );
 }
