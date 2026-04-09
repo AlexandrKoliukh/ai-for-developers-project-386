@@ -1,11 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Proxy /api/* → FastAPI backend (default) or Prism mock server.
-// VITE_MOCK_API_URL is injected via docker-compose:
-//   make up            → http://backend:8000  (FastAPI)
-//   make frontend-mock → http://mock-api:4010 (Prism)
-// Falls back to localhost:8000 for local-outside-Docker dev.
+// In dev:     VITE_MOCK_API_URL points to mock-api or backend container
+// In preview: VITE_BACKEND_URL points to the deployed backend (Render)
+const backendUrl = process.env['VITE_BACKEND_URL'] ?? 'http://localhost:8000';
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -13,7 +12,18 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: process.env['VITE_MOCK_API_URL'] ?? 'http://localhost:8000',
+        target: process.env['VITE_MOCK_API_URL'] ?? backendUrl,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: parseInt(process.env['PORT'] ?? '4173'),
+    proxy: {
+      '/api': {
+        target: backendUrl,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
