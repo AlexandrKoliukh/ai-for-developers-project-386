@@ -1,10 +1,12 @@
-FROM node:24-slim
+FROM python:3.9-slim
 
-RUN apt-get update && apt-get install -y git curl bash \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-RUN npm install -g @anthropic-ai/claude-code
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /workspace
+COPY backend/app/ ./app/
 
-CMD ["claude"]
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
