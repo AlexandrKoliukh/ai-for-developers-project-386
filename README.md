@@ -31,3 +31,19 @@ make claude
 ```
 make help
 ```
+
+### Тестирование (Playwright)
+
+```bash
+# Первый раз: установить Playwright и Chromium
+make test-install
+
+# Запустить тесты (Docker-стек поднимается автоматически)
+make test          # все тесты
+make test-api      # только API-тесты (http://localhost:8000)
+make test-e2e      # только E2E-тесты (http://localhost:5173)
+make test-headed   # E2E с видимым браузером
+make test-report   # открыть HTML-отчёт
+```
+
+> Если стек уже запущен (`make up`), тесты переиспользуют существующие серверы и не останавливают их после завершения.

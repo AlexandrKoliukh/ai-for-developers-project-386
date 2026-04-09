@@ -112,6 +112,18 @@ make claude
 
 # Остановить все контейнеры
 make stop
+
+# Playwright: установить (первый раз)
+make test-install
+
+# Playwright: все тесты (стек поднимается автоматически)
+make test
+
+# Playwright: только API-тесты
+make test-api
+
+# Playwright: только E2E-тесты
+make test-e2e
 ```
 
 Все доступные команды: `make help`

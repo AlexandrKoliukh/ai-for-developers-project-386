@@ -32,3 +32,8 @@ Thumbs.db
 # Temp
 tmp/
 .tmp/
+
+# Playwright
+tests/.playwright-started
+tests/playwright-report/
+tests/test-results/
