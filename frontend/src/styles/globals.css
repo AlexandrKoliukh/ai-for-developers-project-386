@@ -40,7 +40,7 @@
    ===================================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root       { height: 100%; }
-html                    { scrollbar-gutter: stable; }
+html                    { overflow-y:scroll; }
 
 body {
   font-family: var(--font);
@@ -53,10 +53,6 @@ body {
 }
 
 button { font-family: var(--font); cursor: pointer; }
-
-::-webkit-scrollbar       { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--c-bg); }
-::-webkit-scrollbar-thumb { background: var(--c-border-2); }
 
 /* Focus visible — accessibility */
 :focus-visible {
