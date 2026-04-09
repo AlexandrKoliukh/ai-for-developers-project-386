@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { makeApiClient } from '../fixtures/api-client';
-import { dateInWindow, dateOutOfWindow, todayISO } from '../fixtures/helpers';
+import { dateInWindow, dateOutOfWindow, todayISO, workStartUTCHour } from '../fixtures/helpers';
 
 const EVENT_ID = '30-min-intro';
 
@@ -35,17 +35,17 @@ test.describe('GET /event-types/{id}/slots', () => {
     }
   });
 
-  test('slots fall within working hours (09:00–18:00 UTC)', async ({
+  test('first slot starts at WORK_START_HOUR in owner timezone', async ({
     request,
   }) => {
     const api = makeApiClient(request);
-    const { body } = await api.getSlots(EVENT_ID, dateInWindow(1));
+    const date = dateInWindow(1);
+    const { body } = await api.getSlots(EVENT_ID, date);
     const { slots } = body as { slots: Array<{ startTime: string }> };
 
-    // At least one slot should start at 09:00 UTC
     if (slots.length > 0) {
       const firstHour = new Date(slots[0].startTime).getUTCHours();
-      expect(firstHour).toBe(9);
+      expect(firstHour).toBe(workStartUTCHour(date));
     }
   });
 

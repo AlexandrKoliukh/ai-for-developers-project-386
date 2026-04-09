@@ -1,4 +1,16 @@
-/** Date/time utilities for Playwright tests. All dates are UTC. */
+/** Date/time utilities for Playwright tests. */
+
+// Read backend config from env (defaults match docker-compose.yml).
+const OWNER_TIMEZONE = process.env.OWNER_TIMEZONE ?? 'Europe/Moscow';
+const WORK_START_HOUR = parseInt(process.env.WORK_START_HOUR ?? '9', 10);
+
+/** Returns the UTC offset in hours for OWNER_TIMEZONE on a given date. */
+function tzOffsetHours(date: string): number {
+  const d = new Date(`${date}T12:00:00Z`);
+  const utc = new Date(d.toLocaleString('en-US', { timeZone: 'UTC' }));
+  const local = new Date(d.toLocaleString('en-US', { timeZone: OWNER_TIMEZONE }));
+  return (local.getTime() - utc.getTime()) / 3_600_000;
+}
 
 /** Returns today's date in UTC as YYYY-MM-DD. */
 export function todayISO(): string {
@@ -23,12 +35,19 @@ export function dateOutOfWindow(): string {
 }
 
 /**
- * Returns the first working slot start time for a given date (09:00 UTC),
- * formatted as an ISO 8601 UTC string. Assumes OWNER_TIMEZONE=UTC and
- * WORK_START_HOUR=9 (Docker defaults).
+ * Returns the first working slot start time for a given date,
+ * formatted as an ISO 8601 UTC string.
+ * Computes from OWNER_TIMEZONE and WORK_START_HOUR (env / docker-compose).
  */
 export function firstWorkingSlotUTC(date: string): string {
-  return `${date}T09:00:00.000Z`;
+  const utcHour = WORK_START_HOUR - tzOffsetHours(date);
+  const h = String(utcHour).padStart(2, '0');
+  return `${date}T${h}:00:00.000Z`;
+}
+
+/** Exported so tests can derive expected UTC hours without hardcoding. */
+export function workStartUTCHour(date: string): number {
+  return WORK_START_HOUR - tzOffsetHours(date);
 }
 
 /**
