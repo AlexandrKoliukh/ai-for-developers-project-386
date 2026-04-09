@@ -1,6 +1,8 @@
 services:
   claude:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: claude-project
     stdin_open: true
     tty: true
@@ -8,3 +10,14 @@ services:
       - .:/workspace
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
