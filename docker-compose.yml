@@ -13,6 +13,9 @@ services:
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 
+  # ---------------------------------------------------------------------------
+  # Prism mock server — legacy mode (make frontend-mock)
+  # ---------------------------------------------------------------------------
   mock-api:
     image: stoplight/prism:4
     command: mock -h 0.0.0.0 /spec/openapi.yaml --dynamic
@@ -21,14 +24,39 @@ services:
     ports:
       - "4010:4010"
 
+  # ---------------------------------------------------------------------------
+  # FastAPI backend — real implementation (make up / make backend)
+  # ---------------------------------------------------------------------------
+  backend:
+    build: ./backend
+    container_name: booking-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Hot-reload: source is volume-mounted so --reload picks up changes
+      - ./backend/app:/app/app
+    environment:
+      - WORK_START_HOUR=9
+      - WORK_END_HOUR=18
+      # Owner's IANA timezone — slots are generated in this timezone.
+      # Change to e.g. Europe/Moscow, America/New_York, Asia/Tokyo, etc.
+      - OWNER_TIMEZONE=UTC
+
+  # ---------------------------------------------------------------------------
+  # Frontend — Vite dev server
+  # Default: points at FastAPI backend (make up).
+  # Switch to Prism: VITE_MOCK_API_URL=http://mock-api:4010 (make frontend-mock).
+  # ---------------------------------------------------------------------------
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
     depends_on:
       - mock-api
+      - backend
     environment:
-      - VITE_MOCK_API_URL=http://mock-api:4010
+      # Makefile overrides this for mock mode: VITE_MOCK_API_URL=http://mock-api:4010
+      - VITE_MOCK_API_URL=${VITE_MOCK_API_URL:-http://backend:8000}
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/index.html:/app/index.html

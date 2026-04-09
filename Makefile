@@ -1,11 +1,15 @@
 SPEC_DIR     := src/spec
 FRONTEND_DIR := frontend
 
-.PHONY: help frontend claude stop logs spec spec-compile restart-mock install build tsc clean
+.PHONY: help up backend frontend frontend-mock claude stop logs \
+        spec spec-compile restart-mock install build tsc clean
 
 help:
 	@echo ""
-	@echo "  frontend       фронтенд + моки (Docker)"
+	@echo "  up             FastAPI бэкенд + фронтенд (основной режим)"
+	@echo "  backend        только FastAPI бэкенд (порт 8000)"
+	@echo "  frontend-mock  фронтенд + Prism-моки (legacy)"
+	@echo "  frontend       алиас → frontend-mock"
 	@echo "  claude         Claude Code (интерактивный, Docker)"
 	@echo "  stop           остановить контейнеры"
 	@echo "  logs           логи контейнеров"
@@ -16,9 +20,24 @@ help:
 	@echo "  tsc            проверка типов TypeScript"
 	@echo "  clean          удалить артефакты сборки"
 	@echo ""
+	@echo "  Таймзона владельца: задать OWNER_TIMEZONE в docker-compose.yml"
+	@echo "  Документация API:   http://localhost:8000/docs"
+	@echo ""
 
-frontend:
-	docker compose up frontend mock-api
+# FastAPI backend + frontend (default dev target)
+up:
+	docker compose up backend frontend
+
+# Backend only
+backend:
+	docker compose up backend
+
+# Frontend + Prism mock server (legacy / spec testing)
+frontend-mock:
+	VITE_MOCK_API_URL=http://mock-api:4010 docker compose up mock-api frontend
+
+# Backward-compat alias
+frontend: frontend-mock
 
 claude:
 	@[ -f $(HOME)/.claude.json ] || echo '{}' > $(HOME)/.claude.json
