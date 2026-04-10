@@ -107,4 +107,31 @@ test.describe('GET /event-types/{id}/slots', () => {
     // Today is always in window; expect 200 (may have 0 slots if after work hours)
     expect(status).toBe(200);
   });
+
+  test('today slots are all ≥ 1 hour from now', async ({ request }) => {
+    const api = makeApiClient(request);
+    const { status, body } = await api.getSlots(EVENT_ID, todayISO());
+    const { slots } = body as { slots: Array<{ startTime: string }> };
+
+    expect(status).toBe(200);
+
+    const cutoff = Date.now() + 60 * 60_000; // now + 1 hour in ms
+    for (const slot of slots) {
+      const slotMs = new Date(slot.startTime).getTime();
+      expect(slotMs).toBeGreaterThanOrEqual(cutoff);
+    }
+  });
+
+  test('no past slots returned for today', async ({ request }) => {
+    const api = makeApiClient(request);
+    const { status, body } = await api.getSlots(EVENT_ID, todayISO());
+    const { slots } = body as { slots: Array<{ startTime: string }> };
+
+    expect(status).toBe(200);
+
+    const now = Date.now();
+    for (const slot of slots) {
+      expect(new Date(slot.startTime).getTime()).toBeGreaterThan(now);
+    }
+  });
 });
