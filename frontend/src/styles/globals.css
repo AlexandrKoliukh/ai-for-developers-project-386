@@ -824,7 +824,7 @@ button { font-family: var(--font); cursor: pointer; }
   /* 2. Sticky степпер */
   .step-indicator {
     position: sticky;
-    top: 0;
+    top: var(--nav-h);
     z-index: 50;
     background: var(--c-bg);
     padding: var(--sp-sm) 0;
