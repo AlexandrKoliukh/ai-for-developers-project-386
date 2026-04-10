@@ -9,32 +9,53 @@
 
 | Слой | Технология |
 |------|-----------|
-| API-контракт | TypeSpec → OpenAPI 3.0 |
+| API-контракт | TypeSpec 1.11 → OpenAPI 3.0 |
+| Backend | FastAPI 0.111 + Uvicorn 0.30 + Pydantic 2.7 (Python 3.9) |
 | Моки | Prism (stoplight/prism:4) |
-| Frontend | Vite 5 + React 18 + TypeScript |
+| Frontend | Vite 5 + React 18 + TypeScript 5.5 |
 | Анимации | Framer Motion 11 |
 | Даты | date-fns 3 |
 | Маршрутизация | React Router 6 |
+| Тесты | Playwright 1.44 (API + E2E) |
+| Деплой | Render + Docker (multi-stage) + Nginx |
 
 ### Structure
 
 ```
 /
+├── backend/                FastAPI-бэкенд
+│   ├── app/
+│   │   ├── main.py         — точка входа FastAPI
+│   │   ├── models.py       — Pydantic-модели
+│   │   ├── store.py        — in-memory хранилище
+│   │   └── routers/
+│   │       ├── guest.py    — публичные эндпоинты
+│   │       └── owner.py    — эндпоинты владельца
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/               Vite-приложение
+│   ├── src/api/            — типы и клиент
+│   ├── src/components/     — guest/ и owner/ компоненты
+│   ├── src/pages/          — GuestPage, OwnerPage
+│   └── src/styles/         — globals.css (тёмная монохромная тема)
 ├── src/spec/               TypeSpec-спецификация API
 │   ├── main.tsp            — точка входа
 │   ├── models.tsp          — модели + ошибки
-│   ├── routes/owner.tsp    — /owner/...
-│   ├── routes/guest.tsp    — публичный API
+│   ├── routes/             — guest.tsp, owner.tsp
 │   ├── tspconfig.yaml
 │   └── tsp-output/         — сгенерированный openapi.yaml
-├── frontend/               Vite-приложение
-│   ├── src/api/            — типы и клиент (из TypeSpec)
-│   ├── src/components/     — guest/ и owner/ компоненты
-│   ├── src/pages/          — GuestPage, OwnerPage
-│   ├── src/styles/         — globals.css (тёмная монохромная тема)
-│   └── Dockerfile
-├── Makefile                — все команды проекта
-└── docker-compose.yml      — claude + mock-api (Prism) + frontend
+├── tests/                  Playwright-тесты
+│   ├── api/                — API-тесты (6 spec-файлов)
+│   ├── e2e/                — E2E-тесты (3 spec-файла)
+│   └── playwright.config.ts
+├── .github/workflows/      CI (GitHub Actions)
+├── Dockerfile              — production multi-stage (Node → Python + Nginx)
+├── Dockerfile.dev          — dev-контейнер с Claude Code
+├── docker-compose.yml      — backend + mock-api + frontend + claude-code
+├── render.yaml             — конфиг деплоя на Render
+├── nginx.render.conf       — Nginx-шаблон для production
+├── start.render.sh         — entrypoint для Render
+└── Makefile                — все команды проекта
 ```
 
 ### API Summary
@@ -46,7 +67,9 @@
 
 - TypeSpec — источник истины; менять только `.tsp`-файлы, затем компилировать
 - После изменения спека перезапустить Prism (`make restart-mock`)
-- Frontend вызывает API через Vite-прокси `/api` → `http://mock-api:4010`
+- `make up` — основной режим: FastAPI бэкенд (порт 8000) + Vite фронтенд (порт 5173)
+- `make frontend-mock` — legacy-режим: Prism-моки (порт 4010) + Vite
+- Frontend вызывает API через Vite-прокси `/api` → FastAPI backend (или Prism в mock-режиме)
 - `Makefile` — единая точка входа для всех команд (см. `make help`)
 
 ---
@@ -54,6 +77,8 @@
 ## Behavioral Rules (Always Enforced)
 
 - Do what has been asked; nothing more, nothing less
+- Исправляй причину, а не следствие — если тест падает, разберись почему, не подгоняй assert под неправильный результат
+- Если видишь изменения, которые ты не делал — игнорируй их, работай только со своей задачей
 - NEVER create files unless they're absolutely necessary for achieving your goal
 - ALWAYS prefer editing an existing file to creating a new one
 - NEVER proactively create documentation files (*.md) or README files unless explicitly requested
@@ -104,10 +129,16 @@ make tsc
 # Frontend: сборка
 make build
 
-# Запустить фронтенд + mock API (с выводом, без Claude)
+# FastAPI бэкенд + фронтенд (основной режим)
 make up
 
-# Запустить Claude Code (интерактивно, в отдельном терминале)
+# Только бэкенд (порт 8000)
+make backend
+
+# Фронтенд + Prism-моки (legacy)
+make frontend-mock
+
+# Запустить Claude Code (интерактивно, Docker)
 make claude
 
 # Остановить все контейнеры
@@ -124,6 +155,9 @@ make test-api
 
 # Playwright: только E2E-тесты
 make test-e2e
+
+# Playwright: открыть HTML-отчёт
+make test-report
 ```
 
 Все доступные команды: `make help`
