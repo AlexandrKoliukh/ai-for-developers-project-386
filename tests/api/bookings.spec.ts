@@ -4,6 +4,7 @@ import {
   dateInWindow,
   dateOutOfWindow,
   firstWorkingSlotUTC,
+  nowPlusMinutesISO,
   randomSlug,
 } from '../fixtures/helpers';
 import { makeBookingPayload, makeEventTypePayload } from '../fixtures/data-factories';
@@ -119,6 +120,21 @@ test.describe('POST /bookings', () => {
 
     expect(status).toBe(400);
     expect(err.code).toBe('OUT_OF_WINDOW');
+  });
+
+  test('400 TOO_SOON when booking < 1 hour from now', async ({ request }) => {
+    const api = makeApiClient(request);
+    const eventTypeId = await setupEventType(api);
+    const { status, body } = await api.createBooking({
+      eventTypeId,
+      startTime: nowPlusMinutesISO(30), // only 30 min from now
+      guestName: 'Test User',
+      guestEmail: 'test@example.com',
+    });
+    const err = body as { code: string };
+
+    expect(status).toBe(400);
+    expect(err.code).toBe('TOO_SOON');
   });
 
   test('400 for missing required field (guestName)', async ({ request }) => {

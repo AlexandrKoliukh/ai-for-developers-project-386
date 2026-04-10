@@ -51,6 +51,15 @@ export function workStartUTCHour(date: string): number {
 }
 
 /**
+ * Returns an ISO 8601 UTC datetime string for `now + N minutes`.
+ * Useful for testing lead-time constraints.
+ */
+export function nowPlusMinutesISO(minutes: number): string {
+  const d = new Date(Date.now() + minutes * 60_000);
+  return d.toISOString();
+}
+
+/**
  * Returns a URL-safe slug valid for event types.
  * Uses Date.now() to ensure uniqueness across test runs.
  */
