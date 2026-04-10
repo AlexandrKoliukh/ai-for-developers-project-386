@@ -43,7 +43,14 @@ export default function TimeSlotPicker({
 
     guestApi
       .getAvailableSlots(eventTypeId, dateStr)
-      .then((res) => setSlots(res.slots))
+      .then((res) => {
+        // Defense-in-depth: filter out slots less than 1 hour from now
+        const cutoff = Date.now() + 60 * 60_000;
+        const future = res.slots.filter(
+          (s) => new Date(s.startTime).getTime() >= cutoff,
+        );
+        setSlots(future);
+      })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [eventTypeId, date]);

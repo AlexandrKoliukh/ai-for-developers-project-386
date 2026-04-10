@@ -46,6 +46,7 @@ WORK_END_HOUR = int(os.getenv("WORK_END_HOUR", "18"))
 WORK_END_MINUTE = int(os.getenv("WORK_END_MINUTE", "0"))
 SLOT_INTERVAL_MINUTES = int(os.getenv("SLOT_INTERVAL_MINUTES", "30"))
 BOOKING_WINDOW_DAYS = 14
+MIN_BOOKING_LEAD_MINUTES = 60
 
 router = APIRouter(tags=["Guest"])
 
@@ -196,6 +197,11 @@ async def get_available_slots(
     all_bookings = await store.get_all_bookings()
     available = [s for s in all_slots if _slot_is_available(s, all_bookings)]
 
+    # 5. Filter out slots too close to current time (min lead time)
+    now_utc = datetime.now(timezone.utc)
+    cutoff = now_utc + timedelta(minutes=MIN_BOOKING_LEAD_MINUTES)
+    available = [s for s in available if s.startTime >= cutoff]
+
     return TimeSlotList(date=date, eventTypeId=id, slots=available)
 
 
@@ -216,7 +222,18 @@ async def create_booking(body: BookingCreateRequest) -> Booking:
     else:
         start_utc = start_utc.astimezone(timezone.utc)
 
-    # 1. Booking window check
+    # 1a. Lead time check — must be at least MIN_BOOKING_LEAD_MINUTES from now
+    now_utc_check = datetime.now(timezone.utc)
+    if start_utc < now_utc_check + timedelta(minutes=MIN_BOOKING_LEAD_MINUTES):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "TOO_SOON",
+                "message": f"Booking must be at least {MIN_BOOKING_LEAD_MINUTES} minutes from now",
+            },
+        )
+
+    # 1b. Booking window check
     booking_date = start_utc.date()
     window_start, window_end = _booking_window()
     if not (window_start <= booking_date <= window_end):

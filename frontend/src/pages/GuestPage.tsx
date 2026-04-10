@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, memo } from 'react';
+import { Fragment, useState, useEffect, useRef, memo } from 'react';
 import { addDays, format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -74,6 +74,7 @@ export default function GuestPage() {
   const [confirmedBooking,  setConfirmedBooking]  = useState<Booking | null>(null);
 
   const [slotsMap, setSlotsMap] = useState<Record<string, TimeSlot[]>>({});
+  const slotsRef = useRef<HTMLDivElement>(null);
 
   // Load all 14-day slots when event type is selected
   useEffect(() => {
@@ -114,6 +115,12 @@ export default function GuestPage() {
   const handleSelectDate = (date: Date) => {
     setSelectedDate(date);
     setSelectedSlot(null);
+    // Auto-scroll to slots on mobile
+    if (window.innerWidth <= 480) {
+      setTimeout(() => {
+        slotsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 250);
+    }
   };
 
   const handleSelectSlot = (slot: TimeSlot) => {
@@ -269,6 +276,7 @@ export default function GuestPage() {
             <AnimatePresence>
               {selectedDate && (
                 <motion.div
+                  ref={slotsRef}
                   key={selectedDate.toISOString()}
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}

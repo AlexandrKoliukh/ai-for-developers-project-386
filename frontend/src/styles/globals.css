@@ -436,6 +436,9 @@ button { font-family: var(--font); cursor: pointer; }
 }
 .day-cell.today .day-name { color: var(--c-text-2); }
 
+.day-cell.today.selected { background: var(--c-white); }
+.day-cell.today.selected:hover { background: var(--c-white); }
+
 .day-cell.no-avail { opacity: 0.55; }
 
 .day-name  { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-text-3); }
@@ -814,6 +817,33 @@ button { font-family: var(--font); cursor: pointer; }
   .day-num { font-size: 17px; }
   .et-title { font-size: 17px; }
   .datetime-time { font-size: 18px; }
+
+  /* 1. Скрыть блок даты на мобиле */
+  .datetime-bar { display: none; }
+
+  /* 2. Sticky степпер */
+  .step-indicator {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--c-bg);
+    padding: var(--sp-sm) 0;
+    margin-bottom: var(--sp-md);
+  }
+
+  /* 3. Sticky кнопка «Продолжить» */
+  .calendar-continue {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--sp-md);
+    background: var(--c-bg);
+    border-top: 1px solid var(--c-border);
+    z-index: 50;
+    justify-content: center;
+  }
+  .main { padding-bottom: 80px; }
 
   .nav-brand { font-size: 10px; letter-spacing: 0.12em; }
   .nav-link { padding: var(--sp-sm) 12px; font-size: 10px; }
