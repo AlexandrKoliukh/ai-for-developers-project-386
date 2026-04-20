@@ -37,3 +37,6 @@ tmp/
 tests/.playwright-started
 tests/playwright-report/
 tests/test-results/
+
+**/__pycache__
+**/.claude/worktrees/
